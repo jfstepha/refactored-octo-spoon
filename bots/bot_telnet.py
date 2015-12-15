@@ -63,13 +63,13 @@ class BotTelnet:
             
 
     ################################################
-    def seek( self, seek_time, seek_inc, seek_rated, seek_board,
+    def seek( self, seek_time, seek_inc, seek_rated, seek_side, seek_board,
               seek_auto, seek_formula, seek_rating):
     ################################################
         print "BotTelnet seeking game..."
         self.tn.read_until("neverfind",1)
         self.tn.write( "seek " + str(seek_time) + " " + str(seek_inc) + " " + seek_rated + " " +
-                        seek_board + " " + seek_auto + " " + seek_formula + " " + seek_rating + "\n" )
+                        seek_side + " " + seek_board + " " + seek_auto + " " + seek_formula + " " + seek_rating + "\n" )
         rec = self.tn.read_until( self.prompt, self.timeout )
         print "  received: %s" % rec
         if rec.find( self.username) == -1 or rec.find( str(seek_time) ) == -1 or rec.find( str( seek_inc ) ) == -1 or rec.find( seek_rated) == -1 :
@@ -79,6 +79,22 @@ class BotTelnet:
             print "   did not return to prompt"
             raise Exception("telnet_seek", "noprompt")
         print "  seek submitted successfully"
+
+    ################################################
+    def resign(self):
+    ################################################
+        print "BotTelnet resigning..."
+        self.tn.read_until("neverfind",1)
+        self.tn.write( "resign\n")
+        rec = self.tn.read_until( self.prompt, self.timeout )
+        print "  received: %s" % rec
+        if rec.find( "resigns" ) == -1:
+            print "   failed to find resign confirmation"
+            raise Exception("telent_resign", "resign unsuccessful")
+        if rec.find( self.prompt ) == -1:
+            print "   did not return to prompt"
+            raise Exception("telnet_resign", "noprompt")
+        print "  resign submitted successfully"
 
     ################################################
     def waitForGame( self ):
@@ -284,6 +300,7 @@ class BotTelnet:
         rec_trimmed = rec[rec_start:rec_end]
         print "sending this to txtToFen (%d to %d):%s" % (rec_start, rec_end, rec_trimmed)
         (fen, white_time_left, black_time_left,prev_move, to_move) = self.txtToFen( rec_trimmed, self.side )
+            
         return (fen, white_time_left, black_time_left, prev_move, to_move)
     ################################################
     def sendMove(self, move):
