@@ -11,6 +11,7 @@ import getpass
 import sys
 import telnetlib
 import string
+import time
 
 #####################################################
 #####################################################
@@ -66,6 +67,7 @@ class BotTelnet:
               seek_auto, seek_formula, seek_rating):
     ################################################
         print "BotTelnet seeking game..."
+        self.tn.read_until("neverfind",1)
         self.tn.write( "seek " + str(seek_time) + " " + str(seek_inc) + " " + seek_rated + " " +
                         seek_board + " " + seek_auto + " " + seek_formula + " " + seek_rating + "\n" )
         rec = self.tn.read_until( self.prompt, self.timeout )

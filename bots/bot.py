@@ -29,6 +29,8 @@ class Bot:
         self.seek_auto = ""
         self.seek_formula = ""
         self.seek_rating = ""
+        self.exe = "stockfish"
+        self.startstring = "stockfish"
         print "bot %s started" % self.botname
 
     ##########################################################################
@@ -45,7 +47,7 @@ class Bot:
     ##########################################################################
     def startEngine ( self ):
     ##########################################################################
-        self.engine = bot_engine.BotEngine()
+        self.engine = bot_engine.BotEngine(self.exe, self.startstring, self.uci_options)
 
 
     ##########################################################################
@@ -108,8 +110,17 @@ def main():
     bot.serverConnect()
 
     if botname == "stockfisha":
+        bot.exe = "stockfish"
+        bot.startstring = "stockfish"
         bot.seek_time = 15
         bot.seek_inc = 0
+        bot.uci_options = "setoption name Skill Level value 0"
+    if botname == "random":
+        bot.exe = "./randombot.py"
+        bot.startstring = "randombot"
+        bot.seek_time = 15
+        bot.seek_inc = 0
+        bot.uci_options = ""
     bot.seekLoop()
     
 

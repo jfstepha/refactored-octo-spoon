@@ -26,17 +26,19 @@ class BotEngine:
 ############################################################
 
     #############################################
-    def enqueue_output(self, out, queue):
+    def enqueue_output(self, stdout, stderr, queue):
     #############################################
-        for line in iter(out.readline, b''):
+        for line in iter(stdout.readline, b''):
+            queue.put(line)
+        for line in iter(stderr.readline, b''):
             queue.put(line)
         out.close()
 
     #############################################
-    def __init__( self ):
+    def __init__( self, exe, startstring, uci_options ):
     #############################################
         print "Engine starting..."
-        self.startEngine()
+        self.startEngine( exe, startstring, uci_options)
 
     #############################################
     def readRetVal( self, timeout=1 ):
@@ -74,18 +76,18 @@ class BotEngine:
         
 
     #############################################
-    def startEngine( self ):
+    def startEngine( self, exe, startstring, uci_options ):
     #############################################
         print "startEngine"
-        self.p = Popen( "stockfish", stdin=PIPE, stdout=PIPE, stderr=PIPE, bufsize=1, close_fds=ON_POSIX)
+        self.p = Popen( exe, stdin=PIPE, stdout=PIPE, stderr=PIPE, bufsize=1, close_fds=ON_POSIX)
         self.q = Queue()
-        self.t = Thread( target=self.enqueue_output, args=( self.p.stdout, self.q ) )
+        self.t = Thread( target=self.enqueue_output, args=( self.p.stdout, self.p.stderr, self.q ) )
         self.t.daemon = True
         self.t.start()
         
         #### see if the engine actually started 
         print "    checking for engine start"
-        ret = self.searchRetVal( "Stockfish", timeout=5 )
+        ret = self.searchRetVal( startstring, timeout=5 )
         if ret == "timeout":
             print "engine start didn't return anything"
             raise Exception( "start engine", "no initial string" )
@@ -100,7 +102,8 @@ class BotEngine:
 
         #### set UCI options
         print "    setting UCI options"
-        self.p.stdin.write("setoption name Skill Level value 0\n")
+        if uci_options != "":
+            self.p.stdin.write(uci_options + "\n")
         self.p.stdin.write("ucinewgame\n")
         self.p.stdin.write("isready\n")
         ret = self.searchRetVal("readyok")
