@@ -86,7 +86,13 @@ class TestClient(unittest.TestCase):
         response = self.c.makeRequest("seek: \n<s> 0 w=jfstepha ti=00 rt=0 t=2 i=12 r=r tp=konly c=W rr=0-9999 a=t f=f\n\n'")
         self.assertEqual(response, "seek_ok<end>")
         
-        # seek: \n<s> 2 w=jfstepha ti=00 rt=0 t=2 i=12 r=r tp= onlyk c=W rr=0-9999 a=t f=f\n\n'
+    def test_check_ach_get(self):
+        response = self.c.makeRequest("user_login: testuser")
+        self.assertEqual(response, "Hello new user testuser\n");
+        response = self.c.makeRequest("game_end_white: \n{Game 1 (testuser vs. randomkvkbot) ranndomkvkbot resigns} 1-0\n\n")
+        self.assertEqual(response,"ach_get:")
+        response = self.c.makeRequest("delete_user: testuser")
+        self.assertEqual(response, "user testuser deleted<end>");
 
 if __name__ == '__main__':
     unittest.main()

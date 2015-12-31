@@ -10,9 +10,14 @@
 import SocketServer
 import logging
 import _mysql
+from json.decoder import WHITESPACE
 #from msilib import Table
 
 PORT=5011
+
+WIN=2
+DRAW=1
+LOOSE=0
 
 ##########################################################################
 ##########################################################################
@@ -122,6 +127,7 @@ class AchServer( ):
 
     ################################################################
     def check_seek(self,seekstr):
+    ################################################################
         self.logger.info("checking seek %s" % seekstr)
         seek_ary = seekstr.split()
 
@@ -157,9 +163,71 @@ class AchServer( ):
             return ("seek:not_ach %s<end>" % unlocked_by)
 
         return( "seek_ok<end>" )
+    ################################################################
+    def get_achs_for_game(self, variant, player_result):
+    ################################################################
+        if player_result == WIN:
+            q_return = self.submit_query("SELECT * FROM gameach WHERE type='win' AND criteria='%s';" % variant )
+        elif player_result == LOOSE:
+            q_return = self.submit_query("SELECT * FROM gameach WHERE type='loose' AND criteria='%s';" % variant )
+        else: 
+            q_return = self.submit_query("SELECT * FROM gameach WHERE type='draw' AND criteria='%s';" % variant )
+        self.logger.debug("achievements returned: %s" % str(q_return))
+        return q_return
 
+
+    ################################################################
+    def check_game_end(self,gamestr, color):
+    ################################################################
+        game_ary = gamestr.split()
+        self.logger.debug("check_game_end %s got %s" % (color, str( game_ary )))
+        white = game_ary[3]
+        black = game_ary[5]
+        result = game_ary[8]
+        # trim extra junk off username
+        white = white.replace("(","")
+        black = black.replace(")","")
+        ## find variant
+        for index, item in enumerate(game_ary):
+            if item[0:7] == "variant":
+                variant = game_ary[index+1]
+                break
+        self.logger.debug("    %s playing %s result %s" % (white, black, result))
+        if color=="white":
+            username = white
+            if result=="1-0":
+                player_result = WIN
+            elif result == "0-1":
+                player_result = LOOSE
+            else:
+                player_result =  DRAW
+        elif color == "black":
+            username = black
+            if result == "1-0":
+                player_result = LOOSE
+            elif player_result == "0-1":
+                player_result = WIN
+            else:
+                player_result = DRAW
+        else:
+            raise Exception("check_game_side", "neither blach nor white")
+        
+        self.logger.debug("    checking to see if %s has any ach for %s %d" % (username, variant, player_result) )
+        
+        ach_list = self.get_achs_for_game(variant, player_result)
+        if(len( ach_list ) < 1):
+            self.logger.debug("    no acheivements exist for %s %d" % (variant, player_result))
+            return achs
+        for index in range( len(ach_list )):
+            ach = ach_list[index]
+            self.logger.debug("    checking to see status of %s for %s %d" % (ach[0], username, player_result))
+            self
 
             
+
+        
+
+
         
         
 
@@ -212,7 +280,7 @@ class MySocketServer( SocketServer.StreamRequestHandler ):
         if input.find("seek:") == 0:
             ach_server.logger.info("recived seek: %s" % input )
             ret = ach_server.check_seek( input )
-            if ret == "seek_ok":
+            if ret == "seek_ok<end>":
                 ach_server.logger.debug("seek OK")
                 msg = "seek_ok<end>"
             else:
@@ -221,6 +289,15 @@ class MySocketServer( SocketServer.StreamRequestHandler ):
                 
             self.request.send( msg )
             return
+        ###########################################
+        if input.find("game_end_white:") == 0:
+            ach_server.logger.info("recieved game end white: %s" % input)
+            ret= ach_server.check_game_end( input, "white")
+        ###########################################
+        if input.find("game_end_black:") == 0:
+            ach_server.logger.info("recieved game end black: %s" % input)
+            ret= ach_server.check_game_end( input, "black" )
+            
                 
 
         self.request.send("unknown command<end>")
