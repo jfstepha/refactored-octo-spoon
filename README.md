@@ -14,10 +14,14 @@ Install python chess
 - pip install python-chess
 
 Install python mysql
-- sudo apt-get install python-mysql
+- sudo apt-get install python-mysqldb
 
 Set up mysql
 
+- sudo apt-get install mysql-server
 - mysql -u root -p
 - create user 'chess'@'localhost' identified by 'chess_pwd';
+- create database testdb
+- create database whfchess
+- grant all on testdb.* to 'chess'@'localhost';
 - grant all on whfchess.* to 'chess'@'localhost';
