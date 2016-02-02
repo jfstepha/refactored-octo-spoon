@@ -8,7 +8,7 @@
 
 import unittest
 import ach_db
-import ach_game
+import ach_game 
 from _sqlite3 import OperationalError
 import logging
 
@@ -49,7 +49,7 @@ class TestServerTestTable(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(TestServerTestTable,self).__init__(*args, **kwargs)
         self.s = ach_db.AchDBServer(database="testdb")
-        self.s.logger.level = logging.INFO
+        self.s.logger.level = logging.DEBUG
         self.tablename = "testtable2"
         self.s.create_table( self.tablename )
         
