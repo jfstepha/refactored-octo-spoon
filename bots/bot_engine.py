@@ -134,11 +134,11 @@ class BotEngine:
     def evalPos( self, fen, movetime ):
     #############################################
         s1 = "position fen "+ fen 
-        print " sending %s to the engine" % s1
+        #print " sending %s to the engine" % s1
         self.p.stdin.write(s1 + "\n")
 
         s2 = "go movetime %d" %( movetime ) 
-        print " sending %s to the engine" % s2 
+        #print " sending %s to the engine" % s2 
         self.p.stdin.write( s2 + "\n" )
         ret = self.searchRetVal("bestmove")
         if ret == "timeout":
@@ -148,7 +148,7 @@ class BotEngine:
         evalend = ret.find(" ", evalstart)
         retval = ret[evalstart:evalend]
         if ret.rfind("score mate") > evalstart:
-            print "### mate in the future ###"
+            #print "### mate in the future ###"
             retval = 10000
         print "evaluation:%s" % retval
         return(retval)
@@ -156,11 +156,11 @@ class BotEngine:
     def makeFirstMove( self, fen, white_time_left, black_time_left ):
     #############################################
         s1 = "position fen "+ fen 
-        print " sending %s to the engine" % s1
+        #print " sending %s to the engine" % s1
         self.p.stdin.write(s1 + "\n")
 
         s2 = "go wtime %d btime %d" %( white_time_left, black_time_left) 
-        print " sending %s to the engine" % s2 
+        #print " sending %s to the engine" % s2 
         self.p.stdin.write( s2 + "\n" )
         ret = self.searchRetVal("bestmove")
         if ret == "timeout":
@@ -169,12 +169,12 @@ class BotEngine:
         movestart = ret.find("bestmove") + 9
         moveend = ret.find(" ", movestart)
         move = ret[movestart:moveend]
-        print "make move %s" % move
+        #print "make move %s" % move
         return(move)
     #############################################
     def makeMove( self, prev_move, white_time_left, black_time_left ):
     #############################################
-        print "sending move %s to engine" % prev_move
+        # print "sending move %s to engine" % prev_move
         self.p.stdin.write("position moves "+ prev_move + "\n")
         self.p.stdin.write("go wtime %d btime %d" %( white_time_left, black_time_left) + "\n" )
         ret = self.searchRetVal("bestmove")
@@ -184,7 +184,7 @@ class BotEngine:
         movestart = ret.find("bestmove") + 9
         moveend = ret.find(" ", movestart)
         move = ret[movestart:moveend]
-        print "make move %s" % move
+        # print "make move %s" % move
         return(move)
         
 
